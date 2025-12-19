@@ -5,6 +5,10 @@ const path = require('path');
 const xlsx = require('xlsx');
 const bodyParser = require('body-parser');
 const ejs = require('ejs');
+const { put } = require('@vercel/blob');
+
+// Vercel Blob配置
+const BLOB_READ_WRITE_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -54,25 +58,8 @@ if (!isProduction && fs.existsSync(invoiceDataPath)) {
     }
 }
 
-// Multer配置 - 根据发票号创建文件夹
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const invoiceNumber = req.body.invoiceNumber;
-        const folderPath = path.join(uploadsDir, invoiceNumber);
-        
-        // 创建文件夹如果不存在
-        if (!fs.existsSync(folderPath)) {
-            fs.mkdirSync(folderPath, { recursive: true });
-        }
-        
-        cb(null, folderPath);
-    },
-    filename: function (req, file, cb) {
-        const ext = path.extname(file.originalname);
-        const filename = `invoice${ext}`;
-        cb(null, filename);
-    }
-});
+// Multer配置 - 使用内存存储（用于Vercel Blob上传）
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
     storage: storage,
@@ -95,18 +82,61 @@ app.get('/', (req, res) => {
 });
 
 // 提交发票数据
-app.post('/submit-invoice', upload.single('invoiceImage'), (req, res) => {
+app.post('/submit-invoice', upload.single('invoiceImage'), async (req, res) => {
     try {
-        // 检查生产环境
-        if (isProduction) {
-            return res.status(503).render('error', {
-                message: '当前环境不支持文件上传和数据存储',
-                error: 'Vercel Serverless环境不支持持久化存储。请配置云存储服务（如Firebase、AWS S3等）'
-            });
-        }
-        
         const { invoiceNumber, invoiceDate, amount, currency, seller, buyer, invoiceType, description, notes } = req.body;
         const file = req.file;
+        let imagePath = '';
+        let folderPath = '';
+        
+        // 处理文件上传
+        if (file) {
+            if (isProduction) {
+                // 在生产环境下，上传到Vercel Blob
+                if (!BLOB_READ_WRITE_TOKEN) {
+                    return res.status(500).render('error', {
+                        message: '配置错误',
+                        error: 'BLOB_READ_WRITE_TOKEN 环境变量未配置'
+                    });
+                }
+                
+                const blobPath = `invoices/${invoiceNumber}/${Date.now()}-${path.basename(file.originalname)}`;
+                
+                try {
+                    // 上传文件到Vercel Blob
+                    const blobResult = await put(blobPath, file.buffer, {
+                        token: BLOB_READ_WRITE_TOKEN,
+                        contentType: file.mimetype
+                    });
+                    
+                    imagePath = blobResult.url;
+                    folderPath = `invoices/${invoiceNumber}`;
+                } catch (blobError) {
+                    console.error('Vercel Blob上传失败:', blobError);
+                    return res.status(500).render('error', {
+                        message: '文件上传失败',
+                        error: '无法将文件上传到云存储服务'
+                    });
+                }
+            } else {
+                // 在本地开发环境下，使用本地文件系统
+                const folderPathLocal = path.join(uploadsDir, invoiceNumber);
+                
+                // 创建文件夹如果不存在
+                if (!fs.existsSync(folderPathLocal)) {
+                    fs.mkdirSync(folderPathLocal, { recursive: true });
+                }
+                
+                const filename = `invoice${path.extname(file.originalname)}`;
+                const localFilePath = path.join(folderPathLocal, filename);
+                
+                // 保存文件到本地
+                fs.writeFileSync(localFilePath, file.buffer);
+                
+                imagePath = localFilePath;
+                folderPath = folderPathLocal;
+            }
+        }
         
         // 创建发票记录
         const invoice = {
@@ -120,8 +150,8 @@ app.post('/submit-invoice', upload.single('invoiceImage'), (req, res) => {
             invoiceType: invoiceType || '增值税普通发票',
             description: description || '',
             notes: notes || '',
-            imagePath: file ? path.join(file.destination, file.filename) : '',
-            folderPath: file ? file.destination : '',
+            imagePath: imagePath,
+            folderPath: folderPath,
             uploadDate: new Date().toISOString(),
             status: '已提交'
         };
@@ -129,11 +159,13 @@ app.post('/submit-invoice', upload.single('invoiceImage'), (req, res) => {
         // 添加到发票列表
         invoices.push(invoice);
         
-        // 保存数据到JSON文件
-        fs.writeFileSync(invoiceDataPath, JSON.stringify(invoices, null, 2), 'utf8');
-        
-        // 更新Excel表格
-        updateExcelSheet(invoices);
+        // 保存数据到JSON文件（仅本地开发）
+        if (!isProduction) {
+            fs.writeFileSync(invoiceDataPath, JSON.stringify(invoices, null, 2), 'utf8');
+            
+            // 更新Excel表格（仅本地开发）
+            updateExcelSheet(invoices);
+        }
         
         // 返回成功页面
         res.render('success', {
