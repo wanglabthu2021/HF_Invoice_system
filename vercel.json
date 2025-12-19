@@ -1,3 +1,12 @@
 {
-  "version": 2
+  "version": 3,
+  "env": {
+    "NODE_ENV": "production",
+    "BLOB_READ_WRITE_TOKEN": ""
+  },
+  "builds": [
+    { "src": "index.js", "use": "@vercel/node" },
+    { "src": "public/**", "use": "@vercel/static" }
+  ],
+  "routes": [{ "src": "/(.*)", "dest": "index.js" }]
 }
