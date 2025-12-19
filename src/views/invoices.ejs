@@ -1,0 +1,133 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发票管理</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .summary {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .btn {
+            background-color: #008CBA;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover {
+            background-color: #007B9A;
+        }
+        .btn-danger {
+            background-color: #f44336;
+        }
+        .btn-danger:hover {
+            background-color: #d32f2f;
+        }
+        .download-btn {
+            background-color: #FFC107;
+            color: black;
+            margin-bottom: 20px;
+        }
+        .download-btn:hover {
+            background-color: #FFB300;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>发票管理系统</h1>
+        
+        <div class="summary">
+            <h3>统计信息</h3>
+            <p>总发票数：<%= totalInvoices %> | 总金额：<%= totalAmount.toFixed(2) %> 元</p>
+        </div>
+        
+        <% if (warning) { %>
+        <div style="background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ffeeba;">
+            <strong>⚠️ 警告：</strong><%= warning %>
+        </div>
+        <% } %>
+        
+        <a href="/data/invoices_summary.xlsx" class="btn download-btn">下载Excel汇总表</a>
+        <a href="/" class="btn">返回提交页面</a>
+        
+        <table>
+            <tr>
+                <th>发票号</th>
+                <th>发票日期</th>
+                <th>金额</th>
+                <th>销售方</th>
+                <th>购买方</th>
+                <th>发票类型</th>
+                <th>上传日期</th>
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+            <% invoices.forEach(invoice => { %>
+            <tr>
+                <td><%= invoice.invoiceNumber %></td>
+                <td><%= invoice.invoiceDate %></td>
+                <td><%= invoice.amount %> <%= invoice.currency %></td>
+                <td><%= invoice.seller %></td>
+                <td><%= invoice.buyer %></td>
+                <td><%= invoice.invoiceType %></td>
+                <td><%= new Date(invoice.uploadDate).toLocaleString() %></td>
+                <td><%= invoice.status %></td>
+                <td>
+                    <a href="/admin/invoices/<%= invoice.id %>" class="btn">详情</a>
+                </td>
+            </tr>
+            <% }) %>
+        </table>
+        
+        <% if (invoices.length === 0) { %>
+        <p style="text-align: center; color: #999; margin-top: 20px;">暂无发票数据</p>
+        <% } %>
+    </div>
+</body>
+</html>
+    

@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提交成功</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+        .success-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-top: 50px;
+        }
+        .success-icon {
+            font-size: 50px;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon">✓</div>
+        <h1>发票信息提交成功！</h1>
+        <p><%= message %></p>
+        
+        <h3>您的发票信息：</h3>
+        <table>
+            <tr>
+                <th>发票号</th>
+                <td><%= invoice.invoiceNumber %></td>
+            </tr>
+            <tr>
+                <th>发票日期</th>
+                <td><%= invoice.invoiceDate %></td>
+            </tr>
+            <tr>
+                <th>金额</th>
+                <td><%= invoice.amount %> <%= invoice.currency %></td>
+            </tr>
+            <tr>
+                <th>销售方</th>
+                <td><%= invoice.seller %></td>
+            </tr>
+            <tr>
+                <th>购买方</th>
+                <td><%= invoice.buyer %></td>
+            </tr>
+            <tr>
+                <th>发票类型</th>
+                <td><%= invoice.invoiceType %></td>
+            </tr>
+        </table>
+        
+        <a href="/" class="btn">提交新发票</a>
+    </div>
+</body>
+</html>
+    

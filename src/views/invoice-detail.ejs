@@ -1,0 +1,141 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发票详情</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .invoice-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .info-item {
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #555;
+        }
+        .image-section {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .invoice-image {
+            max-width: 100%;
+            max-height: 500px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .btn-secondary {
+            background-color: #008CBA;
+        }
+        .btn-secondary:hover {
+            background-color: #007B9A;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>发票详情</h1>
+        
+        <div class="invoice-info">
+            <div class="info-item">
+                <div class="info-label">发票号</div>
+                <div><%= invoice.invoiceNumber %></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">发票日期</div>
+                <div><%= invoice.invoiceDate %></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">金额</div>
+                <div><%= invoice.amount %> <%= invoice.currency %></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">销售方</div>
+                <div><%= invoice.seller %></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">购买方</div>
+                <div><%= invoice.buyer %></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">发票类型</div>
+                <div><%= invoice.invoiceType %></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">上传日期</div>
+                <div><%= new Date(invoice.uploadDate).toLocaleString() %></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">状态</div>
+                <div><%= invoice.status %></div>
+            </div>
+        </div>
+        
+        <div class="info-item" style="grid-column: span 2;">
+            <div class="info-label">商品/服务描述</div>
+            <div><%= invoice.description || '无' %></div>
+        </div>
+        
+        <div class="info-item" style="grid-column: span 2;">
+            <div class="info-label">备注</div>
+            <div><%= invoice.notes || '无' %></div>
+        </div>
+        
+        <% if (invoice.imagePath) { %>
+        <div class="image-section">
+            <h3>发票图片</h3>
+            <img src="<%= invoice.imagePath.replace('uploads', '/uploads') %>" alt="发票图片" class="invoice-image">
+            <div style="margin-top: 10px; color: #666;">
+                存储位置：<%= invoice.imagePath %>
+            </div>
+        </div>
+        <% } %>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="/admin/invoices" class="btn btn-secondary">返回列表</a>
+            <a href="/" class="btn">提交新发票</a>
+        </div>
+    </div>
+</body>
+</html>
+    
