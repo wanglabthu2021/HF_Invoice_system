@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 2,
   "env": {
     "NODE_ENV": "production",
     "BLOB_READ_WRITE_TOKEN": ""
