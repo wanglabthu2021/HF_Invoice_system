@@ -1,10 +1,4 @@
 {
   "version": 2,
-  "env": {
-    "NODE_ENV": "production",
-    "BLOB_READ_WRITE_TOKEN": ""
-  },
-  "builds": [
-    { "src": "index.js", "use": "@vercel/node" }
-  ]
+  "framework": "express"
 }
