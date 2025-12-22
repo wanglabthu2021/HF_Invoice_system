@@ -1,5 +1,4 @@
-// index.js
-const app = require("./app/server");
+const express = require('express'); 
+const app = require('./app/server');
 
-// ⚠️ 关键：不 listen
 module.exports = app;
