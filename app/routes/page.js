@@ -22,6 +22,7 @@ module.exports = (app) => {
         return sum + (invoice.amount || 0);
       }, 0);
 
+      // 在渲染模板时可以直接访问新的字段
       res.render("invoices", {
         invoices,
         totalInvoices,

@@ -39,6 +39,7 @@
                 <div id="invoiceDateError" class="error"></div>
             </div>
         </div>
+
         <div class="form-row">
             <div class="form-group">
                 <label for="amount">金额 (元) *</label>
@@ -55,14 +56,40 @@
                 </select>
             </div>
         </div>
-        <div class="form-group">
-            <label for="seller">销售方</label>
-            <input type="text" id="seller" name="seller">
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="sellerOption">销售方 *</label>
+                <select id="sellerOption" name="sellerOption" required>
+                    <option value="">请选择</option>
+                    <option value="团购群">团购群</option>
+                    <option value="英潍捷基">英潍捷基</option>
+                    <option value="其他">其他</option>
+                </select>
+                <div id="sellerOptionError" class="error"></div>
+            </div>
+            <div class="form-group" id="otherSellerGroup" style="display:none;">
+                <label for="sellerOther">其他销售方，请说明</label>
+                <input type="text" id="sellerOther" name="sellerOther">
+            </div>
         </div>
+
         <div class="form-group">
-            <label for="buyer">购买方</label>
-            <input type="text" id="buyer" name="buyer">
+            <label for="contact">销售方联系方式</label>
+            <input type="text" id="contact" name="contact">
         </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="buyer">订购人</label>
+                <input type="text" id="buyer" name="buyer">
+            </div>
+            <div class="form-group">
+                <label for="contact">订购时间</label>
+                <input type="date" id="orderDate" name="orderDate">
+            </div>
+        </div>
+
         <div class="form-group">
             <label for="invoiceType">发票类型</label>
             <select id="invoiceType" name="invoiceType">
@@ -72,19 +99,29 @@
                 <option value="其他">其他</option>
             </select>
         </div>
+
         <div class="form-group">
             <label for="description">商品/服务描述</label>
             <textarea id="description" name="description" rows="4"></textarea>
         </div>
+
         <div class="form-group">
             <label for="invoiceImage">上传发票图片 *</label>
             <input type="file" id="invoiceImage" name="invoiceImage" accept="image/*" required>
             <div id="invoiceImageError" class="error"></div>
         </div>
+
+        <div class="form-group">
+            <label for="signImage">上传签收单 *</label>
+            <input type="file" id="signImage" name="signImage" accept="image/*" required>
+            <div id="signImageError" class="error"></div>
+        </div>
+
         <div class="form-group">
             <label for="notes">备注信息</label>
             <textarea id="notes" name="notes" rows="3"></textarea>
         </div>
+
         <button type="submit" class="btn">提交发票信息</button>
         <div id="submitStatus" class="success"></div>
     </form>
@@ -94,6 +131,13 @@
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('invoiceForm');
     const statusEl = document.getElementById('submitStatus');
+    const sellerOption = document.getElementById('sellerOption');
+    const otherSellerGroup = document.getElementById('otherSellerGroup');
+
+    // 显示“其他销售方”输入框
+    sellerOption.addEventListener('change', () => {
+        otherSellerGroup.style.display = sellerOption.value === '其他' ? 'block' : 'none';
+    });
 
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -105,46 +149,67 @@ document.addEventListener('DOMContentLoaded', function() {
         const invoiceDate = document.getElementById('invoiceDate').value;
         const amount = parseFloat(document.getElementById('amount').value);
         const invoiceImage = document.getElementById('invoiceImage').files[0];
+        const signImage = document.getElementById('signImage').files[0];
+        const sellerOptVal = sellerOption.value;
+        const sellerOther = document.getElementById('sellerOther').value;
 
+        // 基础验证
         if (!invoiceNumber || invoiceNumber.length < 6) { document.getElementById('invoiceNumberError').textContent = '发票号至少需要6个字符'; isValid = false; }
         if (!invoiceDate) { document.getElementById('invoiceDateError').textContent = '请选择发票日期'; isValid = false; }
         if (!amount || amount <= 0) { document.getElementById('amountError').textContent = '请输入有效的金额'; isValid = false; }
+        if (!sellerOptVal) { document.getElementById('sellerOptionError').textContent = '请选择销售方'; isValid = false; }
+        if (sellerOptVal === '其他' && !sellerOther.trim()) { document.getElementById('sellerOptionError').textContent = '请填写其他销售方'; isValid = false; }
         if (!invoiceImage) { document.getElementById('invoiceImageError').textContent = '请上传发票图片'; isValid = false; }
         else if (invoiceImage.size > 5*1024*1024) { document.getElementById('invoiceImageError').textContent = '图片大小不能超过5MB'; isValid = false; }
+        if (!signImage) { document.getElementById('signImageError').textContent = '请上传签收单'; isValid = false; }
+        else if (signImage.size > 5*1024*1024) { document.getElementById('signImageError').textContent = '签收单大小不能超过5MB'; isValid = false; }
 
         if (!isValid) return;
 
         try {
-            // 上传图片到 Vercel Blob
-            const uploadForm = new FormData();
-            uploadForm.append('invoiceImage', invoiceImage);
-            const uploadResp = await fetch('/api/upload', { method: 'POST', body: uploadForm });
-            if (!uploadResp.ok) throw new Error('图片上传失败');
-            const { url: imageUrl } = await uploadResp.json();
+            // 上传发票
+            const invoiceForm = new FormData();
+            invoiceForm.append('file', invoiceImage);
+            const invoiceResp = await fetch('/api/upload', { method: 'POST', body: invoiceForm });
+            if (!invoiceResp.ok) throw new Error('发票上传失败');
+            const { url: invoiceUrl } = await invoiceResp.json();
 
-            // 提交发票信息到 Supabase
+            // 上传签收单
+            const signForm = new FormData();
+            signForm.append('file', signImage);
+            const signResp = await fetch('/api/upload', { method: 'POST', body: signForm });
+            if (!signResp.ok) throw new Error('签收单上传失败');
+            const { url: signUrl } = await signResp.json();
+
+            // 提交到 Supabase
             const invoiceData = {
                 invoiceNumber,
                 invoiceDate,
                 amount,
                 currency: document.getElementById('currency').value,
-                seller: document.getElementById('seller').value,
+                sellerOption: sellerOptVal,
+                sellerOther: sellerOther,
                 buyer: document.getElementById('buyer').value,
+                contact: document.getElementById('contact').value,
+                orderDate: document.getElementById('orderDate').value,
                 invoiceType: document.getElementById('invoiceType').value,
                 description: document.getElementById('description').value,
                 notes: document.getElementById('notes').value,
-                imageUrl
+                invoiceUrl,
+                signUrl
             };
 
-            const invoiceResp = await fetch('/api/invoice', {
+            const resp = await fetch('/api/invoice', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(invoiceData)
             });
-            if (!invoiceResp.ok) throw new Error('提交发票信息失败');
+            if (!resp.ok) throw new Error('提交发票信息失败');
 
             statusEl.textContent = '发票提交成功！';
             form.reset();
+            otherSellerGroup.style.display = 'none';
+
         } catch(err) {
             console.error(err);
             statusEl.textContent = '提交失败，请重试';

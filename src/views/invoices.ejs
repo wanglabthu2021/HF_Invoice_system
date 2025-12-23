@@ -86,7 +86,6 @@
             <p>总发票数：<%= totalInvoices %> | 总金额：<%= totalAmount.toFixed(2) %> 元</p>
         </div>
         
-        <a href="/data/invoices_summary.xlsx" class="btn download-btn">下载Excel汇总表</a>
         <a href="/" class="btn">返回提交页面</a>
         
         <table>
@@ -98,7 +97,8 @@
                 <th>购买方</th>
                 <th>发票类型</th>
                 <th>上传日期</th>
-                <th>图片</th>
+                <th>发票图片</th>
+                <th>签收单</th>
                 <th>操作</th>
             </tr>
             <% invoices.forEach(invoice => { %>
@@ -106,17 +106,25 @@
                 <td><%= invoice.invoice_number %></td>
                 <td><%= invoice.invoice_date ? new Date(invoice.invoice_date).toLocaleDateString() : '' %></td>
                 <td><%= invoice.amount %> <%= invoice.currency %></td>
-                <td><%= invoice.seller %></td>
+                <td><%= invoice.seller_option === '其他' ? invoice.seller_other : invoice.seller_option %></td>
                 <td><%= invoice.buyer %></td>
                 <td><%= invoice.invoice_type %></td>
                 <td><%= new Date(invoice.created_at).toLocaleString() %></td>
                 <td>
-                    <% if (invoice.image_url) { %>
-                        <a href="<%= invoice.image_url %>" target="_blank" class="btn">查看图片</a>
+                    <% if (invoice.invoice_url) { %>
+                        <a href="<%= invoice.invoice_url %>" target="_blank" class="btn">查看</a>
                     <% } %>
                 </td>
                 <td>
-                    <a href="<%= invoice.image_url %>" target="_blank" class="btn">下载图片</a>
+                    <% if (invoice.sign_url) { %>
+                        <a href="<%= invoice.sign_url %>" target="_blank" class="btn">查看</a>
+                    <% } %>
+                </td>
+                <td>
+                    <a href="<%= invoice.invoice_url %>" target="_blank" class="btn">下载发票</a>
+                    <% if (invoice.sign_url) { %>
+                        <a href="<%= invoice.sign_url %>" target="_blank" class="btn">下载签收单</a>
+                    <% } %>
                 </td>
             </tr>
             <% }) %>

@@ -9,14 +9,18 @@ router.post('/', async (req, res) => {
     const {
       invoiceNumber,
       invoiceDate,
+      orderDate,
       amount,
       currency,
-      seller,
+      sellerOption,
+      sellerOther,
       buyer,
+      contact,
       invoiceType,
       description,
       notes,
-      imageUrl
+      invoiceUrl,
+      signUrl
     } = req.body;
 
     const { data, error } = await supabase
@@ -24,14 +28,18 @@ router.post('/', async (req, res) => {
       .insert([{
         invoice_number: invoiceNumber,
         invoice_date: invoiceDate,
+        order_date: orderDate,
         amount,
         currency,
-        seller,
-        buyer,
+        seller_option: sellerOption,
+        seller_other: sellerOther,
+        buyer: buyer,
+        contact,
         invoice_type: invoiceType,
         description,
         notes,
-        image_url: imageUrl
+        invoice_url: invoiceUrl,
+        sign_url: signUrl
       }])
       .select();
 
