@@ -9,7 +9,7 @@ const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
+const BLOB_TOKEN = process.env.BLOB_ACCESS_TOKEN;
 
 router.post('/', upload.single('invoiceImage'), async (req, res) => {
   try {
@@ -17,16 +17,17 @@ router.post('/', upload.single('invoiceImage'), async (req, res) => {
       return res.status(400).json({ error: '未上传图片' });
     }
     if (!BLOB_TOKEN) {
-      return res.status(500).json({ error: 'BLOB_READ_WRITE_TOKEN 未配置' });
+      return res.status(500).json({ error: 'BLOB_ACCESS_TOKEN 未配置' });
     }
 
     const blobPath = `invoices/${Date.now()}-${req.file.originalname}`;
     const result = await put(blobPath, req.file.buffer, {
       token: BLOB_TOKEN,
-      contentType: req.file.mimetype
+      contentType: req.file.mimetype,
+      access: 'public'
     });
 
-    res.json({ imageUrl: result.url });
+    res.json({ url: result.url });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: '上传失败' });

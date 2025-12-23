@@ -9,6 +9,7 @@ app.set("view engine", "ejs");
 
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 // 页面路由
 require("./routes/page")(app);

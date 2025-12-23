@@ -1,6 +1,6 @@
 // app/routes/invoice.js
 const express = require('express');
-const { supabase } = require('../lib/supabase');
+const supabase = require('../lib/supabase');
 
 const router = express.Router();
 
@@ -32,7 +32,8 @@ router.post('/', async (req, res) => {
         description,
         notes,
         image_url: imageUrl
-      }]);
+      }])
+      .select();
 
     if (error) {
       console.error(error);
