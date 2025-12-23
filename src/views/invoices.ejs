@@ -94,7 +94,9 @@
                 <th>发票日期</th>
                 <th>金额</th>
                 <th>销售方</th>
-                <th>购买方</th>
+                <th>销售方联系方式</th>
+                <th>订购人</th>
+                <th>订购时间</th>
                 <th>发票类型</th>
                 <th>上传日期</th>
                 <th>发票图片</th>
@@ -107,7 +109,9 @@
                 <td><%= invoice.invoice_date ? new Date(invoice.invoice_date).toLocaleDateString() : '' %></td>
                 <td><%= invoice.amount %> <%= invoice.currency %></td>
                 <td><%= invoice.seller_option === '其他' ? invoice.seller_other : invoice.seller_option %></td>
+                <td><%= invoice.contact %></td>
                 <td><%= invoice.buyer %></td>
+                <td><%= invoice.order_date ? new Date(invoice.order_date).toLocaleDateString() : '' %></td>
                 <td><%= invoice.invoice_type %></td>
                 <td><%= new Date(invoice.created_at).toLocaleString() %></td>
                 <td>
